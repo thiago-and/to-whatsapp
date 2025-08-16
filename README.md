@@ -33,14 +33,27 @@ Este projeto fornece uma interface web simples para fazer upload e converter ví
 
 ## Deploy no Docker
 
-1. Na máquina Ubuntu:
+### Opção 1: Instalação automática (recomendado)
 
-   ```bash
-   sudo apt update; sudo apt install -y docker.io docker-compose git
-   git clone https://github.com/thiago-and/to-whatsapp
-   cd to-whatsapp
-   docker-compose up -d
-   ```
+```bash
+curl -sSL https://raw.githubusercontent.com/thiago-and/to-whatsapp/main/install.sh | bash
+```
+
+### Opção 2: Instalação manual
+
+```bash
+sudo apt update; sudo apt install -y docker.io docker-compose git
+git clone https://github.com/thiago-and/to-whatsapp
+cd to-whatsapp
+
+# Os diretórios são criados automaticamente pelo Docker Compose
+docker-compose up -d
+
+# Verificar status
+docker-compose ps
+```
+
+2. Acesse http://seu-servidor:5000
 
 ## Arquivos importantes
 - `app.py` — servidor Flask (endpoints: /, /upload, /progress/<job_id>, /download/<file>, /cancel/<job_id>)
