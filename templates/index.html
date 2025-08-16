@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Conversor de Vídeos para WhatsApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root{
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f1720;
+            --muted: #6c757d;
+            --input-bg: #fff;
+            --input-border: #dee2e6;
+            --accent: #0d6efd;
+            --accent-contrast: #ffffff;
+        }
+        body { background: var(--bg); color: var(--text); }
+        .card { border-radius: 1rem; background: var(--card-bg); }
+        .form-control.is-invalid { border-color: #dc3545; box-shadow: none; }
+        .time-helper { font-size:0.9rem; }
+
+        /* Dark mode automatic (prefers-color-scheme) */
+        @media (prefers-color-scheme: dark) {
+            :root{
+                --bg: #041120;         /* deep but not pure black */
+                --card-bg: #072032;    /* card slightly lighter */
+                --text: #ffffff;       /* white for max contrast */
+                --muted: #9ab6c6;      /* readable muted text */
+                --input-bg: #08222b;   /* form control background */
+                --input-border: #33565f;/* clearer border */
+                --accent: #60a5fa;     /* brighter blue accent */
+                --accent-contrast: #022033;
+            }
+            .card { box-shadow: 0 10px 30px rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.03); }
+            .progress { background: rgba(255,255,255,0.03); }
+            .progress-bar { background-color: var(--accent); color: var(--accent-contrast); }
+            a, .form-text, .text-muted { color: var(--muted) !important; }
+        }
+
+        /* Manual light override (when user forces Claro) */
+        .theme-light {
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f1720;
+            --muted: #6c757d;
+            --input-bg: #ffffff;
+            --input-border: #dee2e6;
+            --accent: #0d6efd;
+            --accent-contrast: #ffffff;
+        }
+
+        /* Manual dark override (when user selects) */
+        .theme-dark {
+            --bg: #041120;
+            --card-bg: #072032;
+            --text: #ffffff;
+            --muted: #9ab6c6;
+            --input-bg: #08222b;
+            --input-border: #33565f;
+            --accent: #60a5fa;
+            --accent-contrast: #022033;
+        }
+    .theme-dark .card { box-shadow: 0 10px 30px rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.03); }
+    .theme-dark .card-body, .theme-dark h1, .theme-dark label, .theme-dark .form-text, .theme-dark .text-muted { color: var(--text) !important; }
+    .theme-dark .form-label { color: var(--text) !important; }
+    .theme-dark .form-text { color: var(--muted) !important; }
+    .theme-dark .form-control, .theme-dark .form-select { background: var(--input-bg) !important; color: var(--text) !important; border-color: var(--input-border) !important; }
+    .theme-dark .form-control::placeholder { color: rgba(255,255,255,0.65) !important; }
+    .theme-dark input[type="file"] { background: transparent; color: var(--text) !important; }
+    .theme-dark input[type="file"]::-webkit-file-upload-button { color: var(--text) !important; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.04); }
+    .theme-dark .progress { background: rgba(255,255,255,0.03); }
+    .theme-dark .progress-bar { background-color: var(--accent); color: var(--accent-contrast); }
+    .theme-dark .btn, .theme-dark .btn-outline-secondary { color: var(--text) !important; border-color: rgba(255,255,255,0.06) !important; }
+    .theme-dark .btn-primary { background-color: var(--accent) !important; border-color: var(--accent) !important; color: var(--accent-contrast) !important; }
+    .theme-dark .btn-success { background-color: #16a34a !important; border-color: #16a34a !important; color: #fff !important; }
+    .theme-dark a { color: var(--accent) !important; }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h1 class="h4 m-0">Conversor de Vídeos para WhatsApp</h1>
+                            <div class="d-flex align-items-center gap-2">
+                                <label for="theme-select" class="form-label m-0 small text-muted">Tema</label>
+                                <select id="theme-select" class="form-select form-select-sm" style="width:auto">
+                                    <option value="auto">Auto</option>
+                                    <option value="light">Claro</option>
+                                    <option value="dark">Escuro</option>
+                                </select>
+                            </div>
+                        </div>
+                        <p class="text-muted text-center">Selecione um vídeo e clique em enviar. Iremos converter para o formato ideal.</p>
+
+                        <form id="upload-form" novalidate>
+                            <div class="mb-3">
+                                <label for="file" class="form-label">Escolha o vídeo</label>
+                                <input id="file" name="file" class="form-control" type="file" accept="video/*" required>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label for="inicio" class="form-label">Início (mm:ss)</label>
+                                    <div class="input-group">
+                                        <input id="inicio" name="inicio" class="form-control" placeholder="00:05" aria-describedby="inicio-help">
+                                        <button class="btn btn-outline-secondary" type="button" id="inicio-now" title="Começo do vídeo">Início</button>
+                                    </div>
+                                    <div id="inicio-help" class="form-text time-helper">Formato: mm:ss — clique em exemplos: <a href="#" class="time-example" data-val="00:00">00:00</a> • <a href="#" class="time-example" data-val="00:05">00:05</a> • <a href="#" class="time-example" data-val="00:10">00:10</a></div>
+                                </div>
+                                <div class="col-6">
+                                    <label for="fim" class="form-label">Fim (mm:ss)</label>
+                                    <div class="input-group">
+                                        <input id="fim" name="fim" class="form-control" placeholder="00:10" aria-describedby="fim-help">
+                                        <button class="btn btn-outline-secondary" type="button" id="fim-end" title="Fim do vídeo">Fim</button>
+                                    </div>
+                                    <div id="fim-help" class="form-text time-helper">Formato: mm:ss — também pode usar exemplos: <a href="#" class="time-example" data-val="00:15">00:15</a> • <a href="#" class="time-example" data-val="01:00">01:00</a></div>
+                                </div>
+                            </div>
+                            <div class="row g-2 mt-2">
+                                <div class="col-6">
+                                    <label for="tamanho_max" class="form-label">Tamanho máximo (MB)</label>
+                                    <input id="tamanho_max" name="tamanho_max" class="form-control" type="number" value="16" min="1">
+                                </div>
+                                <div class="col-6">
+                                    <label for="resolucao" class="form-label">Resolução</label>
+                                    <select id="resolucao" name="resolucao" class="form-select">
+                                        <option value="1280x720" selected>720p</option>
+                                        <option value="854x480">480p</option>
+                                        <option value="640x360">360p</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 mt-3">
+                                <button id="submit-btn" class="btn btn-success flex-fill" type="submit">Enviar</button>
+                                <button id="cancel-btn" class="btn btn-outline-danger" type="button" style="display:none;">Cancelar</button>
+                            </div>
+                        </form>
+
+                        <div id="upload-area" class="mt-4" style="display:none;">
+                            <div class="progress mb-2" style="height:20px;">
+                                <div id="upload-bar" class="progress-bar" role="progressbar" style="width:0%">0%</div>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div id="status-text" class="small text-muted">Preparando...</div>
+                                <div id="loader" class="spinner-border spinner-border-sm text-primary" role="status" style="display:none;"></div>
+                            </div>
+                        </div>
+
+                        <a id="download-link" class="btn btn-primary mt-3" style="display:none;" download>Baixar vídeo</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- loader não-bloqueante -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    (function(){
+        // Helper: parse and normalize time inputs (accepts mm:ss format)
+        function parseTimeToSeconds(str){
+            if(!str) return null;
+            str = String(str).trim();
+            // accept plain seconds
+            if(/^\d+$/.test(str)) return parseInt(str,10);
+            const parts = str.split(':').map(p=>p.trim());
+            if(parts.some(p => p === '' || !/^\d+$/.test(p))) return null;
+            if(parts.length === 2){ // mm:ss
+                const mm = parseInt(parts[0],10), ss = parseInt(parts[1],10);
+                return mm*60 + ss;
+            }
+            return null;
+        }
+
+        function formatSecondsToMMSS(s){
+            if(s == null || isNaN(s)) return '';
+            s = Math.max(0, Math.floor(s));
+            const mm = Math.floor(s/60); const ss = s%60;
+            const pad = (n)=> String(n).padStart(2,'0');
+            return pad(mm)+':'+pad(ss);
+        }
+
+        function normalizeTimeInput(el){
+            const v = el.value.trim();
+            if(!v){ el.classList.remove('is-invalid'); return true; }
+            const secs = parseTimeToSeconds(v);
+            if(secs === null){ el.classList.add('is-invalid'); return false; }
+            el.value = formatSecondsToMMSS(secs);
+            el.classList.remove('is-invalid');
+            return true;
+        }
+
+        // Apenas formata MM:SS em tempo real, sem validação
+        function liveFormatTimeInput(ev){
+            const el = ev.target;
+            let v = el.value.replace(/[^\d]/g, ''); // Remove tudo que não é dígito
+            
+            if (v.length > 4) {
+                v = v.substring(0, 4);
+            }
+            
+            if (v.length >= 3) {
+                // Adiciona : entre MM e SS (ex: 0130 -> 01:30)
+                v = v.substring(0, 2) + ':' + v.substring(2);
+            }
+            
+            el.value = v;
+        }
+
+        // Theme handling (auto / light / dark) with persistence
+        const themeSelect = document.getElementById('theme-select');
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+
+        function applyTheme(mode){
+            // mode: 'auto'|'light'|'dark'
+            // clear both classes then apply the one we want
+            document.documentElement.classList.remove('theme-dark');
+            document.documentElement.classList.remove('theme-light');
+            if(mode === 'dark'){
+                document.documentElement.classList.add('theme-dark');
+            } else if(mode === 'light'){
+                document.documentElement.classList.add('theme-light');
+            } else if(mode === 'auto'){
+                if(prefersDark && prefersDark.matches) document.documentElement.classList.add('theme-dark');
+            }
+            // update select value
+            if(themeSelect) themeSelect.value = mode;
+        }
+
+        // load saved preference
+        const savedTheme = localStorage.getItem('tw_theme') || 'auto';
+        applyTheme(savedTheme);
+
+        // react to system changes if in auto
+        if(prefersDark){
+            prefersDark.addEventListener('change', function(){ if((localStorage.getItem('tw_theme')||'auto') === 'auto') applyTheme('auto'); });
+        }
+
+        // user selection handler
+        if(themeSelect){
+            themeSelect.value = savedTheme;
+            themeSelect.addEventListener('change', function(){ const v = this.value; localStorage.setItem('tw_theme', v); applyTheme(v); });
+        }
+
+        const form = document.getElementById('upload-form');
+        const fileInput = document.getElementById('file');
+        const uploadArea = document.getElementById('upload-area');
+        const uploadBar = document.getElementById('upload-bar');
+        const statusText = document.getElementById('status-text');
+        const downloadLink = document.getElementById('download-link');
+        const inicioEl = document.getElementById('inicio');
+        const fimEl = document.getElementById('fim');
+        const inicioNowBtn = document.getElementById('inicio-now');
+        const fimEndBtn = document.getElementById('fim-end');
+
+        function setProgress(p, text){
+            uploadBar.style.width = p + '%';
+            uploadBar.textContent = p + '%';
+            statusText.textContent = text || '';
+        }
+
+        function showDim(){
+            const d = document.getElementById('dim-overlay');
+            if(d) d.style.display = 'flex';
+        }
+        function hideDim(){
+            const d = document.getElementById('dim-overlay');
+            if(d) d.style.display = 'none';
+        }
+
+        let currentJob = null;
+        let pollInterval = null;
+        const cancelBtn = document.getElementById('cancel-btn');
+
+        // remove validações extras, só formata
+        // live format on input
+        inicioEl.addEventListener('input', liveFormatTimeInput);
+        fimEl.addEventListener('input', liveFormatTimeInput);
+
+        // example/time shortcut clicks
+        document.querySelectorAll('.time-example').forEach(a => {
+            a.addEventListener('click', function(ev){ ev.preventDefault(); const v = this.dataset.val; // if +5s or +10s, we add seconds to current start
+                const target = this.closest('#inicio-help') ? inicioEl : null;
+                // default: put into focused input; if none, put into inicio
+                const focused = document.activeElement && (document.activeElement.id === 'inicio' || document.activeElement.id === 'fim') ? document.activeElement : inicioEl;
+                focused.value = v;
+                normalizeTimeInput(focused);
+            });
+        });
+
+        inicioNowBtn.addEventListener('click', function(){ inicioEl.value = '00:00'; normalizeTimeInput(inicioEl); });
+        fimEndBtn.addEventListener('click', function(){ fimEl.value = ''; normalizeTimeInput(fimEl); });        form.addEventListener('submit', function(e){
+            e.preventDefault();
+            const file = fileInput.files[0];
+            if(!file) return alert('Selecione um vídeo.');
+
+            // validate time inputs
+            const okInicio = normalizeTimeInput(inicioEl);
+            const okFim = normalizeTimeInput(fimEl);
+            if(!okInicio || !okFim){ return alert('Corrija os campos de tempo (formato: mm:ss).'); }
+            // if both provided, ensure inicio < fim
+            const startSecs = parseTimeToSeconds(inicioEl.value) || 0;
+            const endSecs = parseTimeToSeconds(fimEl.value);
+            if(endSecs !== null && startSecs >= endSecs){ return alert('O campo Início deve ser menor que Fim.'); }
+
+            uploadArea.style.display = 'block';
+            document.getElementById('loader').style.display = 'inline-block';
+            setProgress(0, 'Iniciando upload...');
+
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('inicio', document.getElementById('inicio').value || '');
+            fd.append('fim', document.getElementById('fim').value || '');
+            fd.append('tamanho_max', document.getElementById('tamanho_max').value || '');
+            fd.append('resolucao', document.getElementById('resolucao').value || '1280x720');
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/upload');
+
+            xhr.upload.onprogress = function(evt){
+                if(evt.lengthComputable){
+                    const percent = Math.round((evt.loaded/evt.total)*100);
+                    setProgress(percent, `Enviando... ${percent}%`);
+                }
+            };
+
+            xhr.onload = function(){
+                if(xhr.status === 200){
+                    try{
+                        const data = JSON.parse(xhr.responseText);
+                        if(data.job_id){
+                            currentJob = data.job_id;
+                            cancelBtn.style.display = 'inline-block';
+                            setProgress(100, 'Upload concluído. Aguardando conversão...');
+                            pollProgress(data.job_id);
+                        } else {
+                            setProgress(0, 'Resposta inválida do servidor.');
+                            document.getElementById('loader').style.display = 'none';
+                        }
+                    } catch(err){
+                        setProgress(0, 'Erro ao processar resposta do servidor.');
+                        document.getElementById('loader').style.display = 'none';
+                    }
+                } else {
+                    setProgress(0, 'Erro no upload: ' + xhr.status);
+                    document.getElementById('loader').style.display = 'none';
+                }
+            };
+
+            xhr.onerror = function(){ setProgress(0, 'Erro de rede durante upload.'); document.getElementById('loader').style.display = 'none'; };
+            xhr.send(fd);
+        });
+
+        function stopPolling(){
+            if(pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+            currentJob = null;
+            cancelBtn.style.display = 'none';
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        function pollProgress(jobId){
+            pollInterval = setInterval(() => {
+                fetch('/progress/' + jobId).then(r => r.json()).then(status => {
+                    if(status && typeof status.progress === 'number'){
+                        setProgress(status.progress, 'Convertendo... ' + status.progress + '%');
+                    }
+                    if(status && status.done){
+                        setProgress(100, 'Conversão concluída');
+                        stopPolling();
+                        if(status.file){
+                            downloadLink.style.display = 'inline-block';
+                            downloadLink.href = '/download/' + encodeURIComponent(status.file);
+                            downloadLink.textContent = 'Baixar: ' + status.file;
+                        }
+                    }
+                }).catch(err => {
+                    statusText.textContent = 'Erro ao checar progresso.';
+                    stopPolling();
+                });
+            }, 1500);
+        }
+
+        cancelBtn.addEventListener('click', function(){
+            if(!currentJob) return;
+            fetch('/cancel/' + currentJob, { method: 'POST' })
+            .then(r => r.json())
+            .then(j => {
+                setProgress(0, 'Cancelado');
+                stopPolling();
+            }).catch(_ => {
+                setProgress(0, 'Erro ao cancelar');
+                stopPolling();
+            });
+        });
+    })();
+    </script>
+</body>
+</html>
