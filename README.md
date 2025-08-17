@@ -11,7 +11,7 @@ Este projeto fornece uma interface web simples para fazer upload e converter ví
 
 1. Instale Python 3 + ffmpeg:
 
-   ```powershell
+   ```bash
    sudo apt update; sudo apt install -y python3 python3-venv python3-pip ffmpeg
    git clone https://github.com/thiago-and/to-whatsapp
    cd to-whatsapp
@@ -23,13 +23,13 @@ Este projeto fornece uma interface web simples para fazer upload e converter ví
 
 2. Crie um venv e instale dependências:
 
-   ```powershell
+   ```bash
    python -m venv .venv; .\.venv\Scripts\Activate.ps1; pip install -r requirements.txt
    ```
 
 3. Rode o servidor:
 
-   ```powershell
+   ```bash
    python app.py
    ```
 
@@ -37,23 +37,14 @@ Este projeto fornece uma interface web simples para fazer upload e converter ví
 
 ## Instalação no Docker
 
-### Automático
+### Linux
+
+1. Rode o script:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/thiago-and/to-whatsapp/main/install.sh | bash
 ```
-
-### Manual
-
-```bash
-sudo apt update; sudo apt install -y docker.io docker-compose git
-
-git clone https://github.com/thiago-and/to-whatsapp
-
-cd to-whatsapp
-
-docker-compose up -d
-```
+2. Abra http://seu-ip:5000
 
 ### Windows
 
