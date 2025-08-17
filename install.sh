@@ -11,7 +11,7 @@ echo "🚀 Instalando to-whatsapp..."
 if ! command -v docker &> /dev/null; then
     echo "📦 Instalando Docker..."
     sudo apt update
-    sudo apt install -y docker.io docker-compose git
+    sudo apt install -y docker.io docker-compose-plugin git
     sudo systemctl enable docker
     sudo systemctl start docker
     sudo usermod -aG docker $USER
@@ -37,20 +37,32 @@ fi
 
 cd to-whatsapp
 
-# Criar diretórios necessários
+# Detectar UID/GID do usuário atual
+CURRENT_UID=$(id -u)
+CURRENT_GID=$(id -g)
+
+echo "👤 Detectado usuário: UID=$CURRENT_UID GID=$CURRENT_GID"
+
+# Criar arquivo .env com UID/GID do usuário atual
+cat > .env << EOF
+USER_UID=$CURRENT_UID
+USER_GID=$CURRENT_GID
+FLASK_ENV=production
+EOF
+
+# Criar diretórios necessários com permissões corretas
 echo "📁 Criando diretórios..."
 mkdir -p uploads output logs
-
-# Definir permissões corretas
+chown -R $CURRENT_UID:$CURRENT_GID uploads output logs
 chmod 755 uploads output logs
 
 # Subir aplicação
 echo "🐳 Iniciando aplicação..."
-docker compose up -d
+docker compose up -d --build
 
 # Aguardar inicialização
 echo "⏳ Aguardando inicialização..."
-sleep 10
+sleep 15
 
 # Verificar status
 if docker compose ps | grep -q "Up"; then
