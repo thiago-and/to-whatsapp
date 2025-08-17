@@ -3,19 +3,23 @@
 Este projeto fornece uma interface web simples para fazer upload e converter vídeos otimizados para o WhatsApp.
 
 ## Principais componentes
-- Backend: Flask (app.py)
-- Frontend: templates/index.html (Bootstrap + XHR upload + polling)
-- Requisitos: Python 3.8+, ffmpeg/ffprobe
+- Backend: Python + Flask
+- Frontend: Bootstrap + XHR upload + polling
+- Ferramentas: ffmpeg
 
-## Quick start local
+## Instalação local
 
-1. Instale Python 3:
+1. Instale Python 3 + ffmpeg:
 
    ```powershell
    sudo apt update; sudo apt install -y python3 python3-venv python3-pip ffmpeg
+   git clone https://github.com/thiago-and/to-whatsapp
+   cd to-whatsapp
    ```
 
-   No windows, instale Python e ffmpeg
+   Windows:
+
+   Instale Python e ffmpeg e entre na pasta to-whatsapp.
 
 2. Crie um venv e instale dependências:
 
@@ -23,7 +27,7 @@ Este projeto fornece uma interface web simples para fazer upload e converter ví
    python -m venv .venv; .\.venv\Scripts\Activate.ps1; pip install -r requirements.txt
    ```
 
-3. Rode o servidor (desenvolvimento):
+3. Rode o servidor:
 
    ```powershell
    python app.py
@@ -31,35 +35,39 @@ Este projeto fornece uma interface web simples para fazer upload e converter ví
 
 4. Abra http://localhost:5000
 
-## Deploy no Docker
+## Instalação no Docker
 
-### Opção 1: Instalação automática (recomendado)
+### Automático
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/thiago-and/to-whatsapp/main/install.sh | bash
 ```
 
-### Opção 2: Instalação manual
+### Manual
 
 ```bash
 sudo apt update; sudo apt install -y docker.io docker-compose git
+
 git clone https://github.com/thiago-and/to-whatsapp
+
 cd to-whatsapp
 
-# Os diretórios são criados automaticamente pelo Docker Compose
 docker-compose up -d
-
-# Verificar status
-docker-compose ps
 ```
 
-2. Acesse http://seu-servidor:5000
+### Windows
 
-## Arquivos importantes
-- `app.py` — servidor Flask (endpoints: /, /upload, /progress/<job_id>, /download/<file>, /cancel/<job_id>)
-- `templates/index.html` — frontend responsivo com upload XHR e polling
-- `Dockerfile` e `docker-compose.yml` — configuração para containerização
-- `uploads/`, `output/` — diretórios montados como volumes no Docker
-- `logs/` — logs por job gerados pelo backend
+1. Instale Docker Desktop.
 
-## Licença / notas
+2. Baixar o projeto:
+```bash
+git clone https://github.com/thiago-and/to-whatsapp
+```
+
+3. Rode o servidor:
+```bash
+cd to-whatsapp
+docker-compose up -d
+```
+
+2. Abra http://localhost:5000
