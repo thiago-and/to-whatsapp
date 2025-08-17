@@ -63,7 +63,7 @@ git clone https://github.com/thiago-and/to-whatsapp
 
 ```bash
 cd to-whatsapp
-docker-compose up -d
+docker compose up -d
 ```
 
 4. Open http://localhost:5000

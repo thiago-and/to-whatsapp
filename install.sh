@@ -18,10 +18,15 @@ if ! command -v docker &> /dev/null; then
     echo "⚠️  Você precisará fazer logout/login para usar Docker sem sudo"
 fi
 
-# Verificar se docker-compose está instalado
-if ! command -v docker-compose &> /dev/null; then
-    echo "📦 Instalando Docker Compose..."
-    sudo apt install -y docker-compose
+# Verificar se docker compose está instalado
+if ! command -v docker &> /dev/null || ! docker compose version &> /dev/null; then
+    echo "📦 Instalando Docker com Compose..."
+    sudo apt update
+    sudo apt install -y docker.io docker-compose-plugin git
+    sudo systemctl enable docker
+    sudo systemctl start docker
+    sudo usermod -aG docker $USER
+    echo "⚠️  Você precisará fazer logout/login para usar Docker sem sudo"
 fi
 
 # Clonar repositório se não existir
@@ -41,19 +46,19 @@ chmod 755 uploads output logs
 
 # Subir aplicação
 echo "🐳 Iniciando aplicação..."
-docker-compose up -d
+docker compose up -d
 
 # Aguardar inicialização
 echo "⏳ Aguardando inicialização..."
 sleep 10
 
 # Verificar status
-if docker-compose ps | grep -q "Up"; then
+if docker compose ps | grep -q "Up"; then
     echo "✅ Aplicação instalada com sucesso!"
     echo "🌐 Acesse: http://$(hostname -I | awk '{print $1}'):5000"
-    echo "📋 Para ver logs: docker-compose logs -f app"
-    echo "🛑 Para parar: docker-compose down"
+    echo "📋 Para ver logs: docker compose logs -f app"
+    echo "🛑 Para parar: docker compose down"
 else
     echo "❌ Erro na inicialização. Verifique os logs:"
-    docker-compose logs app
+    docker compose logs app
 fi

@@ -58,7 +58,7 @@ git clone https://github.com/thiago-and/to-whatsapp
 3. Rode o servidor:
 ```bash
 cd to-whatsapp
-docker-compose up -d
+docker compose up -d
 ```
 
 2. Abra http://localhost:5000
